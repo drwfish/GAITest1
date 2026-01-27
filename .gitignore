@@ -1,0 +1,23 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Clawdbot sensitive data
+clawdbot-data/
+*.token
+*.key
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
