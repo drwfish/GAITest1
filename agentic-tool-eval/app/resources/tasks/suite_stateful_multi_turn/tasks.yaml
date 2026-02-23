@@ -1,0 +1,959 @@
+# Suite: suite_stateful_multi_turn
+# Tests whether an agent can handle multi-turn conversations with a simulated
+# user, including asking for missing information, incorporating follow-up
+# clarifications, iterating on results based on feedback, and achieving
+# progressive milestones. 20 tasks with user_simulator configurations.
+
+# ---------------------------------------------------------------------------
+# Theme 1: Agent needs to ask for missing info before proceeding (smt_001-005)
+# ---------------------------------------------------------------------------
+
+- id: "smt_001"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Calculate the monthly payment on my mortgage."
+  toolset_id: "basic"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*320000.*0\\.00(4|5).*"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*360.*"
+  order_matters: false
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(loan|principal|amount|how much|price|borrow)"
+        response: "The loan amount is $320,000."
+      - trigger_pattern: "(?i)(interest|rate|APR)"
+        response: "The annual interest rate is 5.5%."
+      - trigger_pattern: "(?i)(term|years|duration|length|period)"
+        response: "It's a 30-year mortgage."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_002"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Look up the employee's performance review in the database."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*performance_reviews.*WHERE.*(employee_id.*4782|name.*Sarah.*Chen)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which employee|employee.*name|who|name|identify)"
+        response: "The employee is Sarah Chen, employee ID 4782."
+      - trigger_pattern: "(?i)(which review|year|quarter|period|when)"
+        response: "I need the most recent review from 2025 Q4."
+      - trigger_pattern: "(?i)(department|team)"
+        response: "She is in the Engineering department."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_003"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Convert the temperature for me."
+  toolset_id: "basic"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*72.*5.*9.*|.*72.*1\\.8.*"
+  order_matters: true
+  expected_final_answer: "22.22"
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(what.*temperature|value|degrees|how much|number)"
+        response: "The temperature is 72 degrees."
+      - trigger_pattern: "(?i)(which.*unit|from.*what|Fahrenheit|Celsius|Kelvin|convert.*to|to what|from what|direction)"
+        response: "I want to convert from Fahrenheit to Celsius."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_004"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Read the config file and tell me if the settings are correct."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/etc/myapp/production.yaml"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(recommended|default|correct).*settings.*myapp|myapp.*(configuration|settings).*standard"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which (file|config)|file.*path|path|where|location)"
+        response: "The config file is at /etc/myapp/production.yaml."
+      - trigger_pattern: "(?i)(which settings|what.*check|specific|particular|correct.*mean|criteria)"
+        response: "I want to make sure the database connection pool size and timeout values match our recommended standards."
+      - trigger_pattern: "(?i)(application|app name|which app|service)"
+        response: "It's for the myapp service."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_005"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Query the database for the sales figures."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*sales.*WHERE.*region.*North America.*date.*(2025-01|January.*2025|Jan.*2025)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which|what).*(table|data|figures)"
+        response: "I need the total sales revenue from the sales table."
+      - trigger_pattern: "(?i)(time|period|date|when|range|month|year|quarter)"
+        response: "For January 2025."
+      - trigger_pattern: "(?i)(region|area|location|market|territory|filter|specific)"
+        response: "Only for the North America region."
+      - trigger_pattern: "(?i)(group|breakdown|aggregate|by what)"
+        response: "Just the total is fine, no breakdown needed."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Theme 2: User provides follow-up clarification after initial tool use
+#           (smt_006-010)
+# ---------------------------------------------------------------------------
+
+- id: "smt_006"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Search for recent news about renewable energy."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)renewable energy.*(news|recent|latest|2025|2026)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(solar.*energy|solar.*farm).*(Europe|EU|European)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(found|here are|results|articles|news)"
+        response: "Interesting, but I'm mostly interested in solar energy developments in Europe. Can you focus on that? Also, calculate the percentage growth if solar capacity went from 210 GW to 295 GW."
+      - trigger_pattern: "(?i)(solar|europe|percentage|growth)"
+        response: "That's exactly what I needed, thanks."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_007"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Find information about machine learning frameworks in the knowledge base."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)machine learning framework"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(PyTorch|performance|benchmark|comparison).*deploy"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)PyTorch.*deploy.*(production|edge|mobile)|deploy.*PyTorch.*(production|edge|mobile)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(framework|TensorFlow|PyTorch|JAX|result|found|knowledge base|information)"
+        response: "Thanks. I'm actually evaluating PyTorch specifically for deployment on edge devices. Can you check if the knowledge base has benchmarks for PyTorch inference on edge, and also search the web for the latest deployment guides?"
+      - trigger_pattern: "(?i)(edge|deploy|guide|benchmark)"
+        response: "Perfect, that's very helpful."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_008"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Get me the data from the customers table."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*customers"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*customers.*WHERE.*country.*Canada.*ORDER BY.*purchase.*DESC.*LIMIT.*10"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(all customers|here.*data|results|rows|customer.*data|retrieved|query)"
+        response: "That's a lot of data. Actually, I only need the top 10 customers by purchase amount from Canada. Can you re-query for just those? And then calculate their average purchase value."
+      - trigger_pattern: "(?i)(top 10|Canada|average|purchase)"
+        response: "Great, that's what I needed."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_009"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Read the log file at /var/log/app/errors.log and summarize the issues."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/var/log/app/errors.log"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(incidents|tickets|issues).*WHERE.*(timeout|connection).*status.*(open|unresolved)"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(timeout|connection.*refused).*(troubleshoot|fix|resolv|runbook)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(error|issue|log|summary|found|timeout|connection|exception)"
+        response: "I see there are timeout errors. Can you check the incident tracking database for any open tickets related to these timeouts, and also look up the troubleshooting runbook for connection timeouts in the knowledge base?"
+      - trigger_pattern: "(?i)(ticket|incident|runbook|troubleshoot)"
+        response: "Thanks, that gives me a clear picture."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_010"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "What time is it right now?"
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(meetings|calendar|schedule|events).*WHERE.*date"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(weather|forecast).*(San Francisco|SF)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(time is|current time|clock|\\d{1,2}:\\d{2})"
+        response: "Thanks. Now I realize I also need to check if I have any meetings scheduled for the rest of today. Can you query the meetings table for today's date? And also search for the weather in San Francisco since I have an outdoor meeting."
+      - trigger_pattern: "(?i)(meeting|schedule|weather|San Francisco)"
+        response: "Perfect, thanks for checking both."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Theme 3: Iterative search with user feedback and refinement (smt_011-015)
+# ---------------------------------------------------------------------------
+
+- id: "smt_011"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Help me find a good restaurant nearby for dinner tonight."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)restaurant.*(near|dinner|tonight|best)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(Italian|pasta).*(restaurant|dining).*(downtown|open late|8pm)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(Italian|pasta).*(restaurant|dining).*(vegetarian|vegan|plant-based|dietary)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(restaurant|option|suggestion|recommend|found|here are)"
+        response: "Hmm, I should have mentioned - I'm looking for Italian food specifically, and it needs to be open past 8pm. Could you refine your search?"
+      - trigger_pattern: "(?i)(Italian.*open|Italian.*8pm|Italian.*late|pasta|open.*Italian)"
+        response: "Those look good! One more thing - my partner is vegetarian. Can you check which of these have good vegetarian options?"
+      - trigger_pattern: "(?i)(vegetarian|vegan|plant-based|dietary)"
+        response: "Perfect, I'll go with that one. Thanks!"
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_012"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Search for a laptop I can buy for work."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(best|top|good).*laptop.*(work|business|professional)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)laptop.*(32.*GB|RAM).*(under.*2000|budget).*(software development|programming|coding)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(ThinkPad|MacBook Pro|Dell XPS).*(32.*GB|developer).*review.*(2025|2026|latest)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(laptop|option|suggestion|recommend|found|here are|result)"
+        response: "These are too general. I need a laptop for software development with at least 32 GB of RAM, and my budget is under $2000. Can you narrow it down?"
+      - trigger_pattern: "(?i)(32.*GB|developer|programming|under.*2000|budget)"
+        response: "I'm choosing between the ThinkPad and the MacBook Pro. Can you search for the latest reviews comparing them for developer use?"
+      - trigger_pattern: "(?i)(ThinkPad.*MacBook|MacBook.*ThinkPad|compar|review|vs)"
+        response: "Thanks, that helps me decide."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_013"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Query the database for potential candidates for our senior engineering role."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(candidates|applicants).*WHERE.*(senior|engineer)"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(candidates|applicants).*WHERE.*(experience|years).*([5-9]|[1-9][0-9]).*Python"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(candidates|applicants).*WHERE.*(experience|years).*Python.*(AWS|cloud).*ORDER BY.*(experience|rating|score).*DESC"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(candidate|applicant|result|found|here are|list)"
+        response: "Too many results. Can you filter to only candidates with 5 or more years of experience who know Python?"
+      - trigger_pattern: "(?i)(5.*year|Python|experience|filter)"
+        response: "Better, but we also need someone with AWS experience. Add that filter and sort by years of experience descending."
+      - trigger_pattern: "(?i)(AWS|cloud|sorted|descending|order)"
+        response: "Great, those are strong candidates. Thank you."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_014"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Help me find relevant research papers about natural language processing."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(research paper|academic|study).*natural language processing"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(transformer|attention|LLM).*(NLP|natural language).*(medical|clinical|health|biomedical)"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(NLP|natural language).*(medical|clinical|health|biomedical).*(technique|method|approach)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(NLP|natural language).*(medical|clinical).*named entity.*(2025|2026|recent|latest)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(paper|research|NLP|natural language|result|found)"
+        response: "These are too broad. I'm specifically interested in transformer-based approaches applied to medical text. Can you refine the search?"
+      - trigger_pattern: "(?i)(transformer|medical|clinical|health|biomedical)"
+        response: "Good direction. Can you also check the knowledge base for established techniques in medical NLP, and do another search specifically for named entity recognition in clinical notes? I want the most recent papers from 2025 or later."
+      - trigger_pattern: "(?i)(named entity|clinical note|knowledge base|technique|2025)"
+        response: "Excellent, these are exactly the kind of papers I need."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "smt_015"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Look up vacation rental options for my upcoming trip."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(vacation rental|holiday rental|Airbnb|VRBO)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(vacation rental|cabin|cottage).*(Lake Tahoe|Tahoe).*(March|spring).*pet"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(vacation rental|cabin|cottage).*(Lake Tahoe|Tahoe).*pet.*(hot tub|fireplace|under.*300|budget)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*5.*"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(where|destination|location|when|date|trip)"
+        response: "I'm going to Lake Tahoe in the second week of March."
+      - trigger_pattern: "(?i)(rental|option|found|result|Lake Tahoe|listing|here are)"
+        response: "I need a place that's pet-friendly since I'm bringing my dog. Could you search again with that filter?"
+      - trigger_pattern: "(?i)(pet|dog|animal|friendly)"
+        response: "Nice. Can you narrow it down to places with a hot tub, and can you calculate the total cost for a 5-night stay if the nightly rate is around $250?"
+      - trigger_pattern: "(?i)(hot tub|total cost|5.*night|\\$250|1250)"
+        response: "That's great, I'll book one of these."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Theme 4: Milestone-based scoring with progressive completion (smt_016-020)
+# ---------------------------------------------------------------------------
+
+- id: "smt_016"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Help me set up a new project budget. I need a full financial plan."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(budgets|projects).*WHERE.*(similar|previous|past|comparable)"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(budget|financial).*template|budget.*allocation.*guideline"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*500000.*"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(industry|standard|best practice).*(project budget|cost allocation|contingency)"
+  order_matters: false
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(what.*project|type|scope|detail|more info|tell me about)"
+        response: "It's a 6-month software development project with a total budget of $500,000. We need to allocate across personnel, infrastructure, and contingency."
+      - trigger_pattern: "(?i)(previous|historical|past|similar|reference|comparable)"
+        response: "Yes, check the budgets table for similar past projects in the software category."
+      - trigger_pattern: "(?i)(allocation|percentage|split|breakdown|how much.*each)"
+        response: "Use the standard 60/25/15 split: 60% personnel, 25% infrastructure, 15% contingency."
+      - trigger_pattern: "(?i)(industry|benchmark|standard|best practice)"
+        response: "That comparison is very helpful, thank you."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+  milestones:
+    - description: "Gathered project parameters from user"
+      required_tools: []
+      required_information: ["budget amount", "project duration", "allocation categories"]
+    - description: "Retrieved historical budget data"
+      required_tools: ["sqlite_query"]
+      required_information: ["past project budgets"]
+    - description: "Looked up budget allocation guidelines"
+      required_tools: ["knowledge_base"]
+      required_information: ["allocation template or guidelines"]
+    - description: "Calculated budget breakdown"
+      required_tools: ["calculator"]
+      required_information: ["personnel allocation", "infrastructure allocation", "contingency allocation"]
+    - description: "Benchmarked against industry standards"
+      required_tools: ["search"]
+      required_information: ["industry comparison data"]
+
+- id: "smt_017"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "I need to analyze our website's performance issues and come up with a fix."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/var/log/nginx/access.log"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(metrics|performance|response_times).*WHERE.*(slow|threshold|avg|average)"
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(web.*performance|page.*load|server.*response).*(optimiz|diagnos|bottleneck)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(nginx|web server).*(performance|optim|tun|speed).*(high traffic|concurrent)"
+  order_matters: true
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which|what).*(site|website|URL|domain|server|log)"
+        response: "The web server logs are at /var/log/nginx/access.log and we track performance metrics in the database's metrics table."
+      - trigger_pattern: "(?i)(log|access|error|metric|data|slow|latency|response time)"
+        response: "It looks like the API endpoints are really slow. Can you do a thorough analysis of what might be causing the bottleneck? Use the accurate analysis tool for this."
+      - trigger_pattern: "(?i)(bottleneck|analysis|cause|diagnos|root cause|accurate)"
+        response: "That makes sense. Can you search for best practices on optimizing nginx for high-traffic sites so we can fix this?"
+      - trigger_pattern: "(?i)(nginx|optimiz|best practice|fix|solution|recommend)"
+        response: "Great analysis and recommendations. I'll implement these changes."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+  milestones:
+    - description: "Collected server logs and initial data"
+      required_tools: ["file_read"]
+      required_information: ["server log contents"]
+    - description: "Queried performance metrics from database"
+      required_tools: ["sqlite_query"]
+      required_information: ["response times", "slow endpoints"]
+    - description: "Performed thorough performance diagnosis"
+      required_tools: ["slow_accurate"]
+      required_information: ["root cause analysis"]
+    - description: "Researched optimization strategies"
+      required_tools: ["search"]
+      required_information: ["performance best practices"]
+
+- id: "smt_018"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "I want to plan a company offsite event. Help me organize everything."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*COUNT.*FROM.*employees"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(company|corporate).*(event|offsite|retreat).*(policy|guideline|budget)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(venue|event space|retreat).*(Austin|Texas).*(50|corporate|team).*2026"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*50.*"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(team building|offsite|corporate).*(activit|agenda|itinerary)"
+  order_matters: false
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(how many|attendees|people|team size|head count|number of)"
+        response: "We have about 50 people attending. The event is in Austin, Texas in June 2026."
+      - trigger_pattern: "(?i)(budget|cost|spend|policy|guideline)"
+        response: "Check the knowledge base for our company's event policy. The budget is $30,000 total."
+      - trigger_pattern: "(?i)(venue|location|space|place|hotel)"
+        response: "Those venue options look good. Can you calculate the per-person cost if the venue is $15,000 and catering is $10,000?"
+      - trigger_pattern: "(?i)(per.*person|\\$500|cost.*each|individual|per head|activity|agenda|itinerary)"
+        response: "Can you also search for popular team building activities for corporate offsites?"
+      - trigger_pattern: "(?i)(team building|activit)"
+        response: "This is a solid plan. Thank you!"
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+  milestones:
+    - description: "Determined attendee count and basic parameters"
+      required_tools: ["sqlite_query"]
+      required_information: ["employee count", "location", "date"]
+    - description: "Retrieved company event policies"
+      required_tools: ["knowledge_base"]
+      required_information: ["event policy", "budget constraints"]
+    - description: "Researched venue options"
+      required_tools: ["search"]
+      required_information: ["venue options in Austin"]
+    - description: "Calculated per-person costs"
+      required_tools: ["calculator"]
+      required_information: ["per-person cost breakdown"]
+    - description: "Found team building activities"
+      required_tools: ["search"]
+      required_information: ["activity suggestions"]
+
+- id: "smt_019"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "Help me create a competitive analysis report for our product."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(product|our).*(feature|specification|detail|capability)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(competitor|competing|rival|alternative).*(project management|PM).*(tool|software|platform)"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(market_share|market_data|competitors)"
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(competitive|SWOT|strength|weakness|comparison|analysis).*(project management|PM)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*market.*share|.*percent.*"
+  order_matters: false
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which product|what product|product name|what.*analyz|industry|domain)"
+        response: "Our product is a project management SaaS tool called TaskFlow. Main competitors are Asana, Monday.com, and Jira."
+      - trigger_pattern: "(?i)(feature|specification|capability|TaskFlow)"
+        response: "Good, you found our product details. Now search for the latest competitor features and pricing."
+      - trigger_pattern: "(?i)(competitor|Asana|Monday|Jira|pricing|feature.*comparison)"
+        response: "We also have market share data in our database in the market_share table. Can you pull that and calculate our relative market position?"
+      - trigger_pattern: "(?i)(market share|market data|position|database)"
+        response: "Now can you do a thorough SWOT analysis comparing us to the top competitor using the accurate analysis tool?"
+      - trigger_pattern: "(?i)(SWOT|strength|weakness|opportunit|threat|analysis)"
+        response: "Excellent report. This is exactly what I needed for the board meeting."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+  milestones:
+    - description: "Gathered own product information"
+      required_tools: ["knowledge_base"]
+      required_information: ["TaskFlow features and specifications"]
+    - description: "Researched competitor landscape"
+      required_tools: ["search"]
+      required_information: ["competitor features", "competitor pricing"]
+    - description: "Retrieved market share data"
+      required_tools: ["sqlite_query"]
+      required_information: ["market share percentages"]
+    - description: "Calculated market position metrics"
+      required_tools: ["calculator"]
+      required_information: ["relative market position"]
+    - description: "Completed SWOT analysis"
+      required_tools: ["slow_accurate"]
+      required_information: ["strengths", "weaknesses", "opportunities", "threats"]
+
+- id: "smt_020"
+  suite_id: "suite_stateful_multi_turn"
+  category: "agentic"
+  prompt: "I need to prepare a data migration plan from our old system to the new one."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*(table|schema|column|COUNT|size).*FROM.*(information_schema|old_system|legacy)"
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/docs/new_system_schema.json"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(data migration|migration).*(best practice|guideline|checklist|strategy)"
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(schema|field|column).*(mapping|transform|compatibility|mismatch)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*2000000.*|.*2.*10\\^6.*|.*migration.*time.*"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(data migration|database migration).*(tool|automat|script|ETL)"
+  order_matters: false
+  expected_final_answer: null
+  user_simulator:
+    rules:
+      - trigger_pattern: "(?i)(which|what).*(system|database|platform|old|new|source|target)"
+        response: "The old system is a PostgreSQL database and the new one uses MongoDB. The new system schema is documented at /docs/new_system_schema.json."
+      - trigger_pattern: "(?i)(schema|table|structure|column|old.*system|legacy|how many|size|record)"
+        response: "Query the old system database to get the table structure and record counts. We have about 2 million records total."
+      - trigger_pattern: "(?i)(mapping|transform|field|compatib|mismatch|analysis)"
+        response: "Good analysis. Can you check the knowledge base for our company's data migration guidelines and also estimate how long the migration would take at 500 records per second?"
+      - trigger_pattern: "(?i)(guideline|best practice|time|hour|minute|duration|estimate|500)"
+        response: "That timeline works. Can you also search for recommended ETL tools for PostgreSQL to MongoDB migrations?"
+      - trigger_pattern: "(?i)(ETL|tool|automat|script|PostgreSQL.*MongoDB|migration tool)"
+        response: "This is a comprehensive plan. Let's proceed with this approach."
+    default_response: "I don't have that information."
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 1.0
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+  milestones:
+    - description: "Assessed source database structure and size"
+      required_tools: ["sqlite_query"]
+      required_information: ["table schemas", "record counts"]
+    - description: "Retrieved target system schema"
+      required_tools: ["file_read"]
+      required_information: ["new system schema definition"]
+    - description: "Analyzed schema mapping and compatibility"
+      required_tools: ["slow_accurate"]
+      required_information: ["field mappings", "transformation requirements"]
+    - description: "Reviewed migration guidelines and estimated timeline"
+      required_tools: ["knowledge_base", "calculator"]
+      required_information: ["migration best practices", "estimated duration"]
+    - description: "Identified migration tooling"
+      required_tools: ["search"]
+      required_information: ["recommended ETL tools"]

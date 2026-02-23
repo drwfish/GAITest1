@@ -1,0 +1,582 @@
+# Suite: suite_high_cardinality_routing
+# Tests tool selection when many tools are available (simulates 50-200 tools).
+# Uses the "full" toolset (8 tools) as a proxy since we cannot register 200 tools
+# in the registry. Each task is designed to stress-test routing logic that would
+# break down when dozens of distractor tools share overlapping keywords.
+# 20 tasks covering:
+#   hcr_001-hcr_005: Ambiguous prompts where multiple tools could match but one is clearly best
+#   hcr_006-hcr_010: Tricky wording that might confuse keyword-based matching
+#   hcr_011-hcr_015: Obvious correct tool (baseline sanity checks)
+#   hcr_016-hcr_020: Domain jargon that requires understanding tool descriptions
+
+# ---------------------------------------------------------------------------
+# Category 1: Ambiguous prompts -- multiple tools could match, one is best
+# ---------------------------------------------------------------------------
+
+- id: "hcr_001"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "I need information about employee compensation. Can you look up how much people in Engineering are making?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*department.*Engineering"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Prompt mentions 'information' and
+    'look up', which could match search or knowledge_base, but the request is
+    about structured employee data that requires sqlite_query.
+
+- id: "hcr_002"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Search the records for all orders placed by customers who spent more than 500 dollars total."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*orders.*WHERE.*total.*>.*500"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The word 'search' appears in the
+    prompt, which is also a tool name, but the task requires querying structured
+    order records via sqlite_query rather than the search corpus tool.
+
+- id: "hcr_003"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "I want to quickly check the approximate conversion rate for our business. Speed matters more than precision here."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["fast_approx"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "exact"
+          expected_value: "conversion_rate"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Both slow_accurate and fast_approx
+    provide the same metric. The user explicitly values speed over precision,
+    so fast_approx is the correct choice despite both tools matching the domain.
+
+- id: "hcr_004"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Look up the constant for pi. I need the mathematical value, not business data."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "key"
+          constraint_type: "regex"
+          pattern: "(?i)pi"
+  order_matters: true
+  expected_final_answer: "3.14159265358979323846"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). 'Look up' could trigger search,
+    and 'value' could match calculator or data analysis tools. The user
+    clarifies they want a mathematical constant, steering to knowledge_base.
+
+- id: "hcr_005"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Find articles or documents related to machine learning advances."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)machine.?learning"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). 'Find' could match file_read,
+    knowledge_base, or search. The request for 'articles or documents' over a
+    topic signals corpus search rather than file reading or fact lookup.
+
+# ---------------------------------------------------------------------------
+# Category 2: Tricky wording that might confuse keyword-based matching
+# ---------------------------------------------------------------------------
+
+- id: "hcr_006"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Calculate how many employees are in each department by querying the database."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*COUNT.*FROM.*employees.*GROUP BY.*department"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The word 'calculate' is a strong
+    keyword match for the calculator tool, but the actual request requires a
+    SQL GROUP BY aggregation. Tests that the agent reads past the verb.
+
+- id: "hcr_007"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What time-sensitive data do we have about revenue? I need the exact quarterly breakdown."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "regex"
+          pattern: "(?i)revenue"
+        - param_name: "operation"
+          constraint_type: "exact"
+          expected_value: "trend"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The phrase 'time-sensitive' could
+    mislead keyword matching toward the time tool. The user actually wants precise
+    revenue trends, requiring slow_accurate with operation=trend.
+
+- id: "hcr_008"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Read me the list of all products sorted by price from the product catalog database."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*products.*ORDER BY.*price"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The verb 'read' is a keyword
+    match for file_read, but the mention of 'database' and structured product
+    catalog data signals sqlite_query. Tests verb-vs-context disambiguation.
+
+- id: "hcr_009"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "I know the answer involves math, but can you search for recent papers on quantum computing?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)quantum.?computing"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The user mentions 'math' as a
+    red herring. A keyword matcher might route to calculator. The actual request
+    is a corpus search for papers on quantum computing.
+
+- id: "hcr_010"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "The file I need is actually stored in the database -- query for products in the Electronics category."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*products.*WHERE.*category.*Electronics"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). The word 'file' is a strong
+    match for file_read, but the user explicitly corrects this by saying
+    the data is in the database. Tests whether the agent resolves the
+    contradiction using full-sentence understanding.
+
+# ---------------------------------------------------------------------------
+# Category 3: Obvious correct tool (baseline sanity under high cardinality)
+# ---------------------------------------------------------------------------
+
+- id: "hcr_011"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What is 789 * 456 + 123?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "789\\s*\\*\\s*456\\s*\\+\\s*123"
+  order_matters: true
+  expected_final_answer: "359907"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Pure arithmetic expression with
+    no ambiguity. Baseline test to confirm calculator is selected even with
+    many distractor tools available.
+
+- id: "hcr_012"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Read the contents of the file located at data/report.txt."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)data/report\\.txt"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Explicit file read request with
+    a clear file path. Baseline test ensuring file_read is selected without
+    confusion from search or knowledge_base tools.
+
+- id: "hcr_013"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What day of the week is it today?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: "current_time"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Straightforward time query.
+    Baseline test verifying the time tool is selected even among many tools.
+
+- id: "hcr_014"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Run a SQL query to list all employee names and their hire dates."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*name.*hire_date.*FROM.*employees"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Explicit SQL request with
+    clear table and column references. Baseline for sqlite_query selection.
+
+- id: "hcr_015"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What is the chemical symbol for iron? Check the knowledge base."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "key"
+          constraint_type: "regex"
+          pattern: "(?i)chemical.*symbol.*iron"
+  order_matters: true
+  expected_final_answer: "Fe"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Explicit knowledge base request.
+    Baseline test confirming knowledge_base selection when the user directly
+    names the tool.
+
+# ---------------------------------------------------------------------------
+# Category 4: Domain jargon requiring description understanding
+# ---------------------------------------------------------------------------
+
+- id: "hcr_016"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What is our NPS and how does it compare to customer satisfaction? I need exact figures for the board report."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "exact"
+          expected_value: "nps_score"
+        - param_name: "operation"
+          constraint_type: "exact"
+          expected_value: "compare"
+        - param_name: "metric2"
+          constraint_type: "exact"
+          expected_value: "customer_satisfaction"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Uses business jargon 'NPS'
+    (Net Promoter Score). The agent must understand this is a business metric
+    available in the data analysis tools, and select slow_accurate because
+    the user requires exact figures for a board report.
+
+- id: "hcr_017"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Pull the p99 latency numbers from our observability data. A ballpark figure is fine."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["fast_approx"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "exact"
+          expected_value: "p99_latency_ms"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Uses SRE jargon 'p99 latency'
+    and 'observability'. The agent must map this to the data analysis tools
+    and select fast_approx because the user accepts a ballpark figure.
+
+- id: "hcr_018"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "I need to run an ad hoc SELECT against our data warehouse to find the top-grossing product."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*(products|orders).*ORDER BY.*(price|total).*DESC.*LIMIT.*1"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Uses data engineering jargon
+    'ad hoc SELECT' and 'data warehouse'. The agent must recognize this maps
+    to sqlite_query and construct an appropriate ORDER BY ... LIMIT query.
+
+- id: "hcr_019"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "What is our MoM churn delta? Compare churn_rate to conversion_rate for the exec summary. Precision is critical."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "exact"
+          expected_value: "churn_rate"
+        - param_name: "operation"
+          constraint_type: "exact"
+          expected_value: "compare"
+        - param_name: "metric2"
+          constraint_type: "exact"
+          expected_value: "conversion_rate"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Uses SaaS jargon 'MoM churn
+    delta' and 'exec summary'. The agent must parse through the jargon to
+    identify churn_rate and conversion_rate as the relevant metrics, and
+    choose slow_accurate because precision is stated as critical.
+
+- id: "hcr_020"
+  suite_id: "suite_high_cardinality_routing"
+  category: "agentic"
+  prompt: "Grab the five-nines uptime figure from our SLA metrics dashboard. Just a rough number for the standup."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["fast_approx"]
+      arg_constraints:
+        - param_name: "metric"
+          constraint_type: "exact"
+          expected_value: "uptime_percentage"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.5
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 0.8
+    pass_threshold: 0.6
+  description: >
+    Simulates high cardinality (50-200 tools). Uses operations jargon
+    'five-nines' (99.999% uptime), 'SLA metrics', and 'standup'. The agent
+    must map 'five-nines uptime' to the uptime_percentage metric and
+    choose fast_approx because a rough number suffices for a standup.

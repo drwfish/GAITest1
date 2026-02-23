@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: agentic-tool-eval-run
+  labels:
+    app: agentic-tool-eval
+    component: eval-job
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: agentic-tool-eval
+        component: eval-job
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      restartPolicy: Never
+      containers:
+        - name: eval-runner
+          image: agentic-tool-eval:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - "run"
+            - "--suite"
+            - "suite_single_tool_routing"
+            - "--agent-adapter"
+            - "heuristic"
+            - "--sinks"
+            - "stdout"
+            # Uncomment below to enable S3 output:
+            # - "--sinks"
+            # - "stdout,s3"
+          env:
+            - name: RESULTS_SINKS
+              value: "stdout"
+            # Uncomment for S3 output (relies on IRSA for credentials):
+            # - name: S3_BUCKET
+            #   value: "my-eval-results-bucket"
+            # - name: S3_PREFIX
+            #   value: "eval-results"
+            # - name: AWS_REGION
+            #   value: "us-east-1"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: results
+              mountPath: /results
+      volumes:
+        - name: results
+          emptyDir: {}

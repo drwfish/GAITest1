@@ -1,0 +1,809 @@
+# Suite: suite_robustness_and_failures
+# Tests whether an agent can recover from injected tool failures.
+# 20 tasks covering retry after single failure, fallback to alternative tools,
+# recovery from multiple simultaneous failures, and timeout-like failures.
+#
+# Categories (5 tasks each):
+#   rob_001-005: Primary tool fails on first call, expecting retry
+#   rob_006-010: Tool fails, expecting fallback to alternative tool
+#   rob_011-015: Multiple tools fail requiring creative recovery
+#   rob_016-020: Timeout-like failures occur
+
+# ---------------------------------------------------------------------------
+# Theme 1: Primary tool fails on first call, agent should retry (rob_001-005)
+# ---------------------------------------------------------------------------
+
+- id: "rob_001"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "What is 144 divided by 12?"
+  toolset_id: "basic"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "144\\s*/\\s*12"
+      description: "First call to calculator fails"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "144\\s*/\\s*12"
+      description: "Retry calculator after failure"
+  order_matters: true
+  expected_final_answer: "12"
+  failure_injection:
+    - tool_name: "calculator"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: calculator service temporarily unavailable"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_002"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Search for the latest news about renewable energy."
+  toolset_id: "basic"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)renewable\\s+energy"
+      description: "First search call fails"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)renewable\\s+energy"
+      description: "Retry search after failure"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: search index temporarily unreachable"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_003"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Look up the definition of photosynthesis in the knowledge base."
+  toolset_id: "basic"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)photosynthesis"
+      description: "First knowledge_base call fails"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)photosynthesis"
+      description: "Retry knowledge_base after failure"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "knowledge_base"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: knowledge base connection reset"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_004"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Query the database to find all employees in the engineering department."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*department.*engineering"
+      description: "First sqlite_query call fails"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*department.*engineering"
+      description: "Retry sqlite_query after failure"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "sqlite_query"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: database lock timeout exceeded"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_005"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Read the contents of the config.yaml file."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)config\\.yaml"
+      description: "First file_read call fails"
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)config\\.yaml"
+      description: "Retry file_read after failure"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "file_read"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: file system I/O error, please retry"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+# ---------------------------------------------------------------------------
+# Theme 2: Tool fails, agent should fall back to alternative tool (rob_006-010)
+# ---------------------------------------------------------------------------
+
+- id: "rob_006"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Give me a highly accurate estimate of the square root of 250."
+  toolset_id: "cost_tradeoff"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i)(sqrt\\(250\\)|250\\s*\\*\\*\\s*0\\.5)"
+      description: "slow_accurate fails, agent should fall back"
+    - allowed_tools: ["fast_approx"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i)(sqrt\\(250\\)|250\\s*\\*\\*\\s*0\\.5)"
+      description: "Fallback to fast_approx"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "slow_accurate"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: slow_accurate engine overloaded"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_007"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Compute 987 * 654 precisely."
+  toolset_id: "cost_tradeoff"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "987\\s*\\*\\s*654"
+      description: "slow_accurate fails on first call"
+    - allowed_tools: ["fast_approx"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "987\\s*\\*\\s*654"
+      description: "Fallback to fast_approx"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "slow_accurate"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: computation backend not responding"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_008"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Search for information about machine learning frameworks, and if that fails try the knowledge base."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)machine\\s+learning\\s+framework"
+      description: "Search fails, agent should fall back to knowledge_base"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)machine\\s+learning\\s+framework"
+      description: "Fallback to knowledge_base"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: search service returned HTTP 503"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_009"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Look up the company's quarterly revenue from the database. If the database is down, try searching for it instead."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*revenue"
+      description: "sqlite_query fails, agent should fall back to search"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(quarterly\\s+revenue|company.*revenue)"
+      description: "Fallback to search"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "sqlite_query"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: database server connection refused"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_010"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Read the project README file to find the build instructions."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)readme"
+      description: "file_read fails, agent should fall back to knowledge_base or search"
+    - allowed_tools: ["knowledge_base", "search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(build\\s+instructions|readme|project.*build)"
+      description: "Fallback to knowledge_base or search for build info"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "file_read"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: permission denied reading file"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+# ---------------------------------------------------------------------------
+# Theme 3: Multiple tools fail requiring creative recovery (rob_011-015)
+# ---------------------------------------------------------------------------
+
+- id: "rob_011"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Search for the population of France, then calculate what 15% of that population is."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)population.*france"
+      description: "First search call fails"
+    - allowed_tools: ["search", "knowledge_base"]
+      arg_constraints: []
+      description: "Retry search or fall back to knowledge_base"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*0?\\.?15.*"
+      description: "First calculator call fails"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*0?\\.?15.*"
+      description: "Retry calculator"
+  order_matters: false
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: search backend timed out"
+    - tool_name: "calculator"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: calculator process crashed"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_012"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Query the database for total sales, then look up the tax rate in the knowledge base, and finally calculate the tax owed."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*SUM.*sales"
+      description: "First sqlite_query call fails"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*SUM.*sales"
+      description: "Retry sqlite_query"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)tax\\s+rate"
+      description: "First knowledge_base call fails"
+    - allowed_tools: ["knowledge_base", "search"]
+      arg_constraints: []
+      description: "Retry knowledge_base or fall back to search"
+    - allowed_tools: ["calculator"]
+      arg_constraints: []
+      description: "Calculate tax owed"
+  order_matters: false
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "sqlite_query"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: database connection pool exhausted"
+    - tool_name: "knowledge_base"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: knowledge base indexing in progress"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_013"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Get a precise calculation of 2^20 and also search for what that number is commonly used for in computing."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["slow_accurate", "calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "2\\s*\\*\\*\\s*20|2\\s*\\^\\s*20"
+      description: "slow_accurate or calculator fails on first attempt"
+    - allowed_tools: ["fast_approx", "calculator", "slow_accurate"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "2\\s*\\*\\*\\s*20|2\\s*\\^\\s*20"
+      description: "Fallback or retry to compute 2^20"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(1048576|2\\^20|computing|megabyte)"
+      description: "Search fails on first call"
+    - allowed_tools: ["search", "knowledge_base"]
+      arg_constraints: []
+      description: "Retry search or fall back to knowledge_base"
+  order_matters: false
+  expected_final_answer: "1048576"
+  failure_injection:
+    - tool_name: "slow_accurate"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: precision engine unavailable"
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: search rate limit exceeded"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_014"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Read the data.csv file, query the database for matching records, and calculate the total."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)data\\.csv"
+      description: "file_read fails on first call"
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)data\\.csv"
+      description: "Retry file_read"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT"
+      description: "sqlite_query fails on first call"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT"
+      description: "Retry sqlite_query"
+    - allowed_tools: ["calculator"]
+      arg_constraints: []
+      description: "Calculate the total"
+  order_matters: false
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "file_read"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: file descriptor limit reached"
+    - tool_name: "sqlite_query"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: table lock contention"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_015"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Look up the speed of sound in the knowledge base, search for the distance of a nearby thunderstorm, and calculate how long until you hear the thunder."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)speed.*sound"
+      description: "knowledge_base fails on first call"
+    - allowed_tools: ["knowledge_base", "search"]
+      arg_constraints: []
+      description: "Retry knowledge_base or fall back to search"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(thunderstorm|distance|thunder)"
+      description: "search fails on first call"
+    - allowed_tools: ["search", "knowledge_base"]
+      arg_constraints: []
+      description: "Retry search or fall back to knowledge_base"
+    - allowed_tools: ["calculator"]
+      arg_constraints: []
+      description: "Calculator fails on first call"
+    - allowed_tools: ["calculator"]
+      arg_constraints: []
+      description: "Retry calculator"
+  order_matters: false
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "knowledge_base"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: knowledge base shard unavailable"
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: search cluster rebalancing"
+    - tool_name: "calculator"
+      trigger_on_call: 1
+      error_message: "Simulated tool failure: math engine segmentation fault"
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+# ---------------------------------------------------------------------------
+# Theme 4: Timeout-like failures (rob_016-020)
+# ---------------------------------------------------------------------------
+
+- id: "rob_016"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Use the precise calculation tool to compute the factorial of 15."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i)(factorial|15!|15\\s*!)"
+      description: "slow_accurate times out"
+    - allowed_tools: ["fast_approx", "calculator", "slow_accurate"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i)(factorial|15!|15\\s*!)"
+      description: "Fallback or retry after timeout"
+  order_matters: true
+  expected_final_answer: "1307674368000"
+  failure_injection:
+    - tool_name: "slow_accurate"
+      trigger_on_call: 1
+      error_message: "Simulated timeout: slow_accurate exceeded 30s deadline"
+      timeout_ms: 5000
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_017"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Query the database for the top 10 customers by total order value."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*customers.*ORDER BY.*LIMIT\\s+10"
+      description: "sqlite_query times out on complex query"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*customers"
+      description: "Retry with potentially simplified query"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "sqlite_query"
+      trigger_on_call: 1
+      error_message: "Simulated timeout: query execution exceeded 60s limit"
+      timeout_ms: 8000
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_018"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Search for comprehensive information about the history of quantum computing."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(history.*quantum\\s+computing|quantum\\s+computing.*history)"
+      description: "search times out on first call"
+    - allowed_tools: ["search", "knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)quantum\\s+computing"
+      description: "Retry search or fall back to knowledge_base after timeout"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "search"
+      trigger_on_call: 1
+      error_message: "Simulated timeout: search request timed out after 45s"
+      timeout_ms: 6000
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_019"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Read the large_dataset.json file and summarize its structure."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "regex"
+          pattern: "(?i)large_dataset\\.json"
+      description: "file_read times out on large file"
+    - allowed_tools: ["file_read", "search", "knowledge_base"]
+      arg_constraints: []
+      description: "Retry file_read (possibly with different params) or fall back to another tool"
+  order_matters: true
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "file_read"
+      trigger_on_call: 1
+      error_message: "Simulated timeout: file read operation timed out after 30s (file too large)"
+      timeout_ms: 5000
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4
+
+- id: "rob_020"
+  suite_id: "suite_robustness_and_failures"
+  category: "agentic"
+  prompt: "Use the knowledge base to look up the boiling points of water, ethanol, and mercury, then calculate their average."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)boiling\\s+point"
+      description: "knowledge_base times out on first call"
+    - allowed_tools: ["knowledge_base", "search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)boiling\\s+point"
+      description: "Retry knowledge_base or fall back to search after timeout"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(?i).*3.*"
+      description: "Calculate average of three boiling points"
+  order_matters: false
+  expected_final_answer: null
+  failure_injection:
+    - tool_name: "knowledge_base"
+      trigger_on_call: 1
+      error_message: "Simulated timeout: knowledge base query timed out waiting for embedding service"
+      timeout_ms: 7000
+  scoring:
+    tool_selection_weight: 0.5
+    tool_args_weight: 0.3
+    trajectory_weight: 0.5
+    efficiency_weight: 0.2
+    final_answer_weight: 0.5
+    robustness_weight: 2.0
+    pass_threshold: 0.4

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "doc_001",
+    "title": "Introduction to Renewable Energy Sources",
+    "content": "Renewable energy sources include solar, wind, hydroelectric, geothermal, and biomass. Solar energy is the most abundant energy source on Earth, with the sun providing about 173,000 terawatts of energy continuously. Wind energy has seen rapid growth, with global installed capacity reaching over 900 GW. Hydroelectric power remains the largest source of renewable electricity globally.",
+    "tags": ["energy", "renewable", "solar", "wind"]
+  },
+  {
+    "id": "doc_002",
+    "title": "Machine Learning Fundamentals",
+    "content": "Machine learning is a subset of artificial intelligence that enables systems to learn from data. Key approaches include supervised learning (classification, regression), unsupervised learning (clustering, dimensionality reduction), and reinforcement learning. Popular frameworks include TensorFlow, PyTorch, and scikit-learn. Deep learning, using neural networks with multiple layers, has revolutionized computer vision and natural language processing.",
+    "tags": ["ml", "ai", "deep learning", "frameworks"]
+  },
+  {
+    "id": "doc_003",
+    "title": "Global Climate Change Impact",
+    "content": "Climate change is causing rising global temperatures, with 2023 being one of the warmest years on record. Effects include melting polar ice caps, rising sea levels, more frequent extreme weather events, and shifts in ecosystems. The Paris Agreement aims to limit warming to 1.5 degrees Celsius above pre-industrial levels. Carbon dioxide levels have exceeded 420 ppm.",
+    "tags": ["climate", "environment", "global warming"]
+  },
+  {
+    "id": "doc_004",
+    "title": "Quantum Computing Overview",
+    "content": "Quantum computing leverages quantum mechanical phenomena like superposition and entanglement to perform computations. Qubits can exist in multiple states simultaneously, enabling parallel processing. IBM, Google, and other companies are developing quantum processors. Potential applications include cryptography, drug discovery, optimization problems, and financial modeling. Current quantum computers have 100-1000+ qubits.",
+    "tags": ["quantum", "computing", "technology"]
+  },
+  {
+    "id": "doc_005",
+    "title": "Space Exploration Milestones",
+    "content": "The James Webb Space Telescope launched in December 2021 has revolutionized our understanding of the early universe, capturing images of galaxies formed just 300 million years after the Big Bang. NASA's Artemis program aims to return humans to the Moon. SpaceX's Starship is being developed for Mars missions. The International Space Station has been continuously occupied since November 2000.",
+    "tags": ["space", "nasa", "telescope", "mars"]
+  },
+  {
+    "id": "doc_006",
+    "title": "Cryptocurrency and Blockchain Technology",
+    "content": "Blockchain is a distributed ledger technology that enables secure, transparent transactions without intermediaries. Bitcoin, created in 2009, was the first cryptocurrency. Ethereum introduced smart contracts, enabling decentralized applications. The total cryptocurrency market cap has fluctuated between $1-3 trillion. Proof-of-stake has largely replaced proof-of-work for new blockchains due to energy concerns.",
+    "tags": ["crypto", "blockchain", "bitcoin", "ethereum"]
+  },
+  {
+    "id": "doc_007",
+    "title": "Advances in Medical Research",
+    "content": "mRNA vaccine technology, developed for COVID-19, is being applied to cancer treatment and other diseases. CRISPR gene editing continues to advance, with the first CRISPR-based therapy approved in 2023. Artificial intelligence is accelerating drug discovery, with AI-designed molecules entering clinical trials. Organ-on-a-chip technology is reducing the need for animal testing.",
+    "tags": ["medicine", "vaccines", "crispr", "health"]
+  },
+  {
+    "id": "doc_008",
+    "title": "Electric Vehicle Market Trends",
+    "content": "Electric vehicle sales have grown exponentially, with EVs representing over 18% of new car sales globally in 2023. Battery technology improvements have increased range beyond 300 miles for many models. Charging infrastructure is expanding rapidly, with over 2 million public charging points worldwide. Tesla, BYD, and traditional automakers compete for market share. Solid-state batteries promise faster charging and greater energy density.",
+    "tags": ["ev", "electric", "cars", "battery"]
+  },
+  {
+    "id": "doc_009",
+    "title": "Cybersecurity Threats and Defenses",
+    "content": "Ransomware attacks have increased by 150% in recent years, targeting healthcare, education, and government sectors. Zero-trust architecture has become the standard security model. AI-powered threat detection can identify anomalies in network traffic. The average cost of a data breach has exceeded $4.5 million. Multi-factor authentication, encryption, and regular patching remain fundamental defenses.",
+    "tags": ["security", "cyber", "ransomware", "threats"]
+  },
+  {
+    "id": "doc_010",
+    "title": "Sustainable Agriculture Practices",
+    "content": "Precision agriculture uses sensors, drones, and AI to optimize crop yields while minimizing resource usage. Vertical farming enables year-round production in urban environments. Cover cropping and no-till farming improve soil health and carbon sequestration. The global organic food market exceeded $200 billion in 2023. Regenerative agriculture practices are gaining adoption as a climate change mitigation strategy.",
+    "tags": ["agriculture", "farming", "sustainable", "food"]
+  },
+  {
+    "id": "doc_011",
+    "title": "Gold Market Analysis 2024",
+    "content": "Gold prices reached record highs in 2024, trading above $2,400 per ounce. Central bank purchases, geopolitical tensions, and inflation concerns drove demand. The gold market is valued at approximately $12 trillion. Major gold-producing countries include China, Australia, Russia, and the United States. Gold ETFs saw significant inflows as investors sought safe-haven assets.",
+    "tags": ["gold", "markets", "investment", "commodities"]
+  },
+  {
+    "id": "doc_012",
+    "title": "Foreign Exchange Rate Overview",
+    "content": "The USD/EUR exchange rate has fluctuated between 0.85 and 0.95 in recent years. Factors affecting exchange rates include interest rate differentials, trade balances, political stability, and economic growth. The forex market is the largest financial market, with daily trading volume exceeding $7.5 trillion. Currency pairs are quoted as base/counter currency.",
+    "tags": ["forex", "currency", "exchange", "usd", "eur"]
+  },
+  {
+    "id": "doc_013",
+    "title": "US Passport Renewal Guide",
+    "content": "US passport renewal can be done by mail for eligible applicants. Requirements include a recent passport photo, completed Form DS-82, and the current passport. Processing time is 6-8 weeks for routine service or 2-3 weeks for expedited service. Passport books cost $130 for renewal. Passports are valid for 10 years for adults and 5 years for minors under 16.",
+    "tags": ["passport", "travel", "us", "renewal"]
+  },
+  {
+    "id": "doc_014",
+    "title": "Mortgage Interest Rate Trends",
+    "content": "Mortgage interest rates in the US averaged around 6.5-7.5% for 30-year fixed mortgages in 2024. Rates are influenced by the Federal Reserve's monetary policy, inflation expectations, and the bond market. A 1% increase in mortgage rates can reduce purchasing power by approximately 10%. ARM rates start lower but adjust periodically. FHA loans offer lower rates for qualified borrowers.",
+    "tags": ["mortgage", "interest", "rates", "housing", "finance"]
+  },
+  {
+    "id": "doc_015",
+    "title": "Natural Language Processing Advances",
+    "content": "Large language models like GPT-4, Claude, and Llama have transformed NLP capabilities. Transformer architecture, introduced in 2017, remains the foundation of modern NLP. Applications include text generation, summarization, translation, and question answering. Fine-tuning and retrieval-augmented generation improve model accuracy for specific domains. Prompt engineering has emerged as a key skill for leveraging LLMs effectively.",
+    "tags": ["nlp", "ai", "language", "transformers"]
+  },
+  {
+    "id": "doc_016",
+    "title": "S&P 500 Market Performance",
+    "content": "The S&P 500 index returned approximately 24% in 2024, driven by technology sector gains. The index includes 500 large-cap US companies representing about 80% of US equity market capitalization. Historical average annual return is approximately 10%. Technology, healthcare, and financial sectors are the largest by market weight. Index funds tracking the S&P 500 have become the most popular investment vehicle.",
+    "tags": ["stocks", "market", "sp500", "investment"]
+  },
+  {
+    "id": "doc_017",
+    "title": "Battery Technology Innovations",
+    "content": "Solid-state batteries promise energy densities exceeding 500 Wh/kg, compared to 250 Wh/kg for current lithium-ion batteries. Sodium-ion batteries offer a cheaper alternative using abundant materials. Silicon anode technology can increase capacity by 40%. Toyota, QuantumScape, and others are racing to commercialize solid-state technology. Battery recycling infrastructure is expanding to address supply chain concerns.",
+    "tags": ["battery", "technology", "energy", "innovation"]
+  },
+  {
+    "id": "doc_018",
+    "title": "Restaurant Guide: Italian Cuisine",
+    "content": "Italian restaurants emphasize fresh, high-quality ingredients and regional traditions. Popular dishes include pasta carbonara, risotto, osso buco, and margherita pizza. Fine dining Italian restaurants typically offer multi-course tasting menus. Vegetarian options are abundant, including eggplant parmigiana, bruschetta, and caprese salad. Wine pairings are essential, with Chianti, Barolo, and Prosecco being popular choices.",
+    "tags": ["food", "restaurant", "italian", "dining"]
+  },
+  {
+    "id": "doc_019",
+    "title": "Laptop Buying Guide 2024",
+    "content": "Top laptops for work include the ThinkPad X1 Carbon, MacBook Pro M3, and Dell XPS 15. Key specs to consider: at least 16GB RAM for general use, 32GB for development; 512GB+ SSD storage; and a display with at least 1080p resolution. Battery life ranges from 8-20 hours depending on model. Price ranges from $800 for budget to $3000+ for premium configurations.",
+    "tags": ["laptop", "technology", "buying guide", "computers"]
+  },
+  {
+    "id": "doc_020",
+    "title": "Vacation Rentals: Lake Tahoe",
+    "content": "Lake Tahoe vacation rentals range from cozy cabins to luxury lakefront homes. Peak season is June-August for summer and December-March for skiing. Average nightly rates range from $150 for basic accommodations to $500+ for luxury properties. Many rentals are pet-friendly and include amenities like hot tubs, fireplaces, and lake access. Popular areas include South Lake Tahoe, Incline Village, and Tahoe City.",
+    "tags": ["vacation", "rental", "tahoe", "travel"]
+  }
+]

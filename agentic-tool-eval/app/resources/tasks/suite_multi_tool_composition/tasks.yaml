@@ -1,0 +1,778 @@
+# Suite: suite_multi_tool_composition
+# Tests whether an agent can chain multiple tools in sequence to complete
+# composite tasks. 22 tasks covering 2-6 step workflows across calculator,
+# search, sqlite_query, knowledge_base, file_read, time, slow_accurate,
+# and fast_approx tools.
+
+# ---------------------------------------------------------------------------
+# 2-step compositions
+# ---------------------------------------------------------------------------
+
+- id: "mtc_001"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Search for the current price of gold per ounce, then calculate how much 15 ounces would cost."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(price|cost).*gold.*ounce"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*15.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_002"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Query the database for total revenue from the orders table, then calculate what 18% tax on that revenue would be."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*SUM.*revenue.*FROM.*orders"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*0?\\.?18.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_003"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Look up the speed of light in the knowledge base, then calculate how long it takes light to travel from the Sun to Earth (approximately 93 million miles)."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)speed.*light"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*93.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_004"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Look up the population of Germany in the knowledge base, then search for the latest GDP of Germany so I can understand per-capita GDP."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)population.*germany"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)GDP.*germany|germany.*GDP"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_005"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Get the current date and time, then query the database for all orders placed today."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*orders.*WHERE.*date"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_006"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Read the configuration file at /etc/app/config.json and then search for documentation about any deprecated settings mentioned in it."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/etc/app/config.json"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)deprecated.*setting|config.*deprecated"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_007"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Search for the current exchange rate of USD to EUR, then calculate how much 4500 USD is in EUR."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(USD.*EUR|exchange rate.*dollar.*euro)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*4500.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# 3-step compositions
+# ---------------------------------------------------------------------------
+
+- id: "mtc_008"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Query the database for the average salary in the Engineering department, then look up the cost of living index for San Francisco, and finally calculate the salary adjusted by the cost of living index."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*AVG.*salary.*FROM.*employees.*WHERE.*department.*Engineering"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)cost.*living.*index.*San Francisco"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_009"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Look up the formula for compound interest in the knowledge base, then search for the current average savings account interest rate, and finally calculate the compound interest on a $10,000 deposit over 5 years compounded annually."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)compound.*interest.*formula"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(savings.*account.*interest.*rate|average.*interest.*rate.*savings)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*10000.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_010"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Get the current date, then query the database for all employees whose contract expires within the next 30 days, and then calculate how many days remain for each employee's contract."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*contract.*expir"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_011"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Read the data file at /data/sales_summary.csv, then query the database for last quarter's target from the sales_targets table, and calculate the percentage of target achieved."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/data/sales_summary.csv"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*sales_targets.*WHERE.*quarter"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*100.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_012"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Look up the atomic mass of carbon in the knowledge base, look up the atomic mass of oxygen in the knowledge base, and then calculate the molecular mass of CO2."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)atomic.*mass.*carbon"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)atomic.*mass.*oxygen"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: false
+  expected_final_answer: "44"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_013"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Get today's date, search for today's S&P 500 index value, and calculate the year-to-date percentage change from the January 1st opening of 4770."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)S&?P\\s*500.*(index|value|price|today)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*4770.*"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# 4-step compositions
+# ---------------------------------------------------------------------------
+
+- id: "mtc_014"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "I need a full cost analysis: query the database for the number of units sold last month from the sales table, look up our per-unit manufacturing cost from the knowledge base, search for the current shipping rate per unit, and then calculate total cost (manufacturing + shipping) for all units sold."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*sales.*WHERE.*month"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(manufacturing|production).*cost.*per.*unit"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)shipping.*rate.*per.*unit"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_015"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Read the employee roster file at /data/team_roster.txt, then get the current date, query the database for any upcoming birthdays within the next 7 days from the employees table, and calculate each person's age."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/data/team_roster.txt"
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*birth"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_016"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "I need a precise comparison of two investment options. Use the slow_accurate tool to get the exact 10-year return for Treasury bonds, then use slow_accurate to get the exact 10-year return for the S&P 500, then calculate the difference in returns on a $50,000 investment, and finally search for expert opinions on which is better for retirement."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(treasury.*bond|bond).*10.*year.*return"
+    - allowed_tools: ["slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)S&?P\\s*500.*10.*year.*return"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*50000.*"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(bonds|treasury).*vs.*S&?P.*retirement"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_017"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Look up Earth's orbital period in the knowledge base, look up Mars's orbital period in the knowledge base, calculate how often they align (synodic period), and then search for when the next Earth-Mars opposition will occur."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(earth|Earth).*orbital.*period"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(mars|Mars).*orbital.*period"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: ".*"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)next.*Earth.*Mars.*opposition"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# 5-step compositions
+# ---------------------------------------------------------------------------
+
+- id: "mtc_018"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Perform a full quarterly business review: get today's date to identify the current quarter, query the database for this quarter's total revenue from the orders table, query the database for this quarter's total expenses from the expenses table, calculate the net profit and profit margin percentage, and then search for industry-average profit margins to benchmark against."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*SUM.*revenue.*FROM.*orders"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*SUM.*FROM.*expenses"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)industry.*average.*profit.*margin"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_019"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Help me plan a server capacity upgrade: read the current server specs from /etc/infra/server_specs.yaml, query the database for average daily request count over the past 30 days from the request_logs table, search for the latest benchmark data for the next-tier server, calculate the projected capacity improvement as a percentage, and look up our company's infrastructure budget policy in the knowledge base."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/etc/infra/server_specs.yaml"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*AVG.*FROM.*request_logs"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(server.*benchmark|benchmark.*server)"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)infrastructure.*budget.*policy"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_020"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Prepare an employee compensation analysis: query the database for all salaries grouped by department from the employees table, look up the national median salary for software engineers in the knowledge base, search for the latest cost of living adjustment rates, calculate the average salary gap between our Engineering department and the national median, and get the current date to timestamp the report."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*salary.*FROM.*employees.*GROUP BY.*department"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(national.*median.*salary.*software|software.*engineer.*median.*salary)"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)cost.*living.*adjustment.*rate"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# 6-step compositions
+# ---------------------------------------------------------------------------
+
+- id: "mtc_021"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Conduct a full product launch readiness assessment: get today's date to check the timeline, read the launch checklist from /data/launch_checklist.md, query the database for the current inventory count of the new product from the inventory table, look up our minimum launch inventory threshold in the knowledge base, calculate whether we have sufficient inventory (percentage above or below threshold), and search for competitor product launch dates to assess market timing."
+  toolset_id: "multi_tool"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/data/launch_checklist.md"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*inventory.*WHERE.*product"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)minimum.*launch.*inventory.*threshold"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)competitor.*product.*launch.*date"
+  order_matters: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5
+
+- id: "mtc_022"
+  suite_id: "suite_multi_tool_composition"
+  category: "agentic"
+  prompt: "Create a comprehensive energy efficiency report for our office building: read the utility bills from /data/utility_bills.csv, get today's date so we know the reporting period, query the database for the office square footage and occupancy data from the buildings table, look up energy efficiency standards for commercial buildings in the knowledge base, calculate our energy usage per square foot and compare it to the standard, and search for available government rebates for energy efficiency upgrades."
+  toolset_id: "full"
+  max_turns: 10
+  max_tool_calls: 15
+  expected_steps:
+    - allowed_tools: ["file_read"]
+      arg_constraints:
+        - param_name: "path"
+          constraint_type: "exact"
+          expected_value: "/data/utility_bills.csv"
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*(square.*foot|sqft|occupancy).*FROM.*buildings"
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)energy.*efficiency.*standard.*commercial.*building"
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "any"
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)government.*rebate.*energy.*efficiency"
+  order_matters: false
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.8
+    trajectory_weight: 1.0
+    efficiency_weight: 0.5
+    final_answer_weight: 1.0
+    pass_threshold: 0.5

@@ -1,0 +1,426 @@
+# Suite: suite_abstain_and_missing_tools
+# Tests whether an agent correctly abstains from calling tools when no suitable
+# tool is available. The agent should recognize the limitation and respond
+# without making any tool calls.
+#
+# 20 tasks across four categories:
+#   abs_001-abs_005: Empty toolset (no tools at all, various requests)
+#   abs_006-abs_010: calculator_only toolset, but request needs search/KB/SQL
+#   abs_011-abs_015: search_only toolset, but request needs calculator/SQL/KB
+#   abs_016-abs_020: Any toolset, but the request itself needs no tool at all
+
+# ---------------------------------------------------------------------------
+# Category 1: Empty toolset -- no tools available at all
+# ---------------------------------------------------------------------------
+
+- id: "abs_001"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Calculate 1234 * 5678 for me."
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_002"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Search the web for the latest news about renewable energy."
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_003"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Query the database to find all users who signed up in the last 30 days."
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_004"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Look up the knowledge base article about our company's refund policy."
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_005"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Send an email to john@example.com with the subject 'Meeting Tomorrow' and body 'Hi John, can we meet at 3pm?'"
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Category 2: calculator_only toolset -- request needs search, KB, or SQL
+# ---------------------------------------------------------------------------
+
+- id: "abs_006"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Search the web for the current population of Tokyo."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_007"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Look up our internal knowledge base for the onboarding checklist for new engineers."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_008"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Run a SQL query to get the total revenue from the orders table grouped by month."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_009"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Find the latest research papers on large language models published this year."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_010"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Check the database for any open support tickets assigned to the billing team."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Category 3: search_only toolset -- request needs calculator, SQL, or KB
+# ---------------------------------------------------------------------------
+
+- id: "abs_011"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Calculate the compound interest on a $10,000 principal at 5% annual rate compounded monthly for 3 years."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_012"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Query the products table to find all items with a price above $50 that are currently in stock."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_013"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Look up the internal knowledge base for the step-by-step guide on resetting a customer's password."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_014"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Compute the standard deviation of the following data set: 12, 15, 18, 22, 25, 30, 35."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_015"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Run a SQL query to delete all expired session records from the sessions table."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: null
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+# ---------------------------------------------------------------------------
+# Category 4: Request itself needs no tool -- agent should answer directly
+# ---------------------------------------------------------------------------
+
+- id: "abs_016"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Tell me a joke."
+  toolset_id: "empty"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: "The agent should respond with a joke without calling any tools."
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_017"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Explain what a variable is in programming."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: "The agent should explain the concept of a variable without calling any tools."
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_018"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "What is the difference between a list and a tuple in Python?"
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: "The agent should explain the difference from its own knowledge without calling any tools."
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_019"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Say hello in five different languages."
+  toolset_id: "calculator_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: "The agent should provide greetings in five languages without calling any tools."
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5
+
+- id: "abs_020"
+  suite_id: "suite_abstain_and_missing_tools"
+  category: "agentic"
+  prompt: "Write a haiku about the ocean."
+  toolset_id: "search_only"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps: []
+  order_matters: true
+  abstain_expected: true
+  expected_final_answer: "The agent should compose a haiku without calling any tools."
+  scoring:
+    tool_selection_weight: 0.0
+    tool_args_weight: 0.0
+    trajectory_weight: 0.0
+    efficiency_weight: 0.0
+    final_answer_weight: 0.5
+    abstention_weight: 2.0
+    pass_threshold: 0.5

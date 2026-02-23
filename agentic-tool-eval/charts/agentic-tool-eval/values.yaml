@@ -1,0 +1,63 @@
+# Default values for agentic-tool-eval
+
+replicaCount: 1
+
+image:
+  repository: agentic-tool-eval
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+# ConfigMap settings
+config:
+  RESULTS_SINKS: "stdout"
+  RESULTS_FILE_PATH: "/results/results.jsonl"
+  LOG_LEVEL: "info"
+
+# Secret settings (optional)
+# These are only created if values are provided
+secrets:
+  # HTTP_INGEST_URL: ""
+  # HTTP_INGEST_AUTH_HEADER: ""
+  # HTTP_INGEST_AUTH_VALUE: ""
+  # HTTP_INGEST_BEARER_TOKEN: ""
+
+# S3 output settings (optional)
+s3:
+  enabled: false
+  bucket: ""
+  prefix: "eval-results"
+  region: "us-east-1"
+
+# Agent endpoint for HTTP adapter (optional)
+agent:
+  url: ""
+  timeout: 60
+
+# Job settings (for batch mode)
+job:
+  enabled: false
+  suite: "suite_single_tool_routing"
+  agentAdapter: "heuristic"
+  threshold: 0.0
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+
+# Deployment settings (for service mode)
+deployment:
+  enabled: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

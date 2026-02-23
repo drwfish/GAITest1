@@ -1,0 +1,508 @@
+# Suite: suite_single_tool_routing
+# Tests whether an agent can select the correct single tool for a given request.
+# 22 tasks covering calculator, search, knowledge_base, time, sqlite_query,
+# and ambiguous-tool-selection scenarios.
+
+- id: "str_001"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is 2 + 3?"
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "exact"
+          expected_value: "2 + 3"
+  order_matters: true
+  expected_final_answer: "5"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_002"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Calculate 145 * 37 + 89"
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "145\\s*\\*\\s*37\\s*\\+\\s*89"
+  order_matters: true
+  expected_final_answer: "5454"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_003"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is the square root of 256?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(sqrt\\(256\\)|256\\s*\\*\\*\\s*0\\.5|256\\s*\\^\\s*0\\.5)"
+  order_matters: true
+  expected_final_answer: "16"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_004"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Compute (18 / 3) + (7 * 4) - 10"
+  toolset_id: "multi_tool"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "18.*3.*7.*4.*10"
+  order_matters: true
+  expected_final_answer: "24"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_005"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is 15% of 240?"
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["calculator"]
+      arg_constraints:
+        - param_name: "expression"
+          constraint_type: "regex"
+          pattern: "(0\\.15\\s*\\*\\s*240|240\\s*\\*\\s*0\\.15|15.*\\/.*100.*\\*.*240|240.*\\*.*15.*\\/.*100)"
+  order_matters: true
+  expected_final_answer: "36"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_006"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Search for the latest news about renewable energy policy in Europe."
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)renewable.*energy.*europe|europe.*renewable.*energy"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_007"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Find information online about the James Webb Space Telescope's recent discoveries."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)james.*webb.*telescope"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_008"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Search the web for how to apply for a US passport renewal."
+  toolset_id: "multi_tool"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(US|united states).*passport.*renewal"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_009"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Look up current mortgage interest rates in the United States."
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)mortgage.*interest.*rate"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_010"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is the capital of France?"
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)capital.*france"
+  order_matters: true
+  expected_final_answer: "Paris"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_011"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Look up the boiling point of water in Celsius from the knowledge base."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)boiling.*point.*water"
+  order_matters: true
+  expected_final_answer: "100"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_012"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is the chemical symbol for gold?"
+  toolset_id: "multi_tool"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)chemical.*symbol.*gold"
+  order_matters: true
+  expected_final_answer: "Au"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_013"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Who wrote the novel '1984'? Check the knowledge base."
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(author|wrote).*1984"
+  order_matters: true
+  expected_final_answer: "George Orwell"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_014"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is the current time?"
+  toolset_id: "basic"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: "current_time"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_015"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is today's date in ISO 8601 format?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "regex"
+          pattern: "(?i)(iso|%Y-%m-%d)"
+  order_matters: true
+  expected_final_answer: "current_date_iso"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_016"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Tell me the current time in UTC."
+  toolset_id: "multi_tool"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["time"]
+      arg_constraints:
+        - param_name: "format"
+          constraint_type: "any"
+  order_matters: true
+  expected_final_answer: "current_time_utc"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_017"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Query the database to get the names of all employees in the Engineering department."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*department.*=.*Engineering"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_018"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Run a SQL query to find the total number of orders placed in 2025."
+  toolset_id: "multi_tool"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*COUNT.*FROM.*orders.*WHERE.*2025"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_019"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "Use the database to find the top 5 most expensive products."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*products.*ORDER BY.*price.*DESC.*LIMIT.*5"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_020"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "What is the population of Japan? I need a precise, well-sourced answer."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["search", "slow_accurate"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)population.*japan"
+  order_matters: true
+  expected_final_answer: "search_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_021"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "I have a quick trivia question -- roughly how far is the Earth from the Sun?"
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["knowledge_base", "fast_approx"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)(earth.*sun.*distance|distance.*earth.*sun)"
+  order_matters: true
+  expected_final_answer: "93 million miles"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6
+
+- id: "str_022"
+  suite_id: "suite_single_tool_routing"
+  category: "agentic"
+  prompt: "I need employee salary data from the database. List all employees earning more than 100000 per year."
+  toolset_id: "full"
+  max_turns: 5
+  max_tool_calls: 5
+  expected_steps:
+    - allowed_tools: ["sqlite_query"]
+      arg_constraints:
+        - param_name: "query"
+          constraint_type: "regex"
+          pattern: "(?i)SELECT.*FROM.*employees.*WHERE.*salary.*>.*100000"
+  order_matters: true
+  expected_final_answer: "query_results"
+  scoring:
+    tool_selection_weight: 1.0
+    tool_args_weight: 0.5
+    trajectory_weight: 0.5
+    efficiency_weight: 0.3
+    final_answer_weight: 1.0
+    pass_threshold: 0.6

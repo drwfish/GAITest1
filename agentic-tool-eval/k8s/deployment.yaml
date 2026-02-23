@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-tool-eval
+  labels:
+    app: agentic-tool-eval
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentic-tool-eval
+  template:
+    metadata:
+      labels:
+        app: agentic-tool-eval
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: agentic-tool-eval
+          image: agentic-tool-eval:latest
+          imagePullPolicy: IfNotPresent
+          args: ["serve", "--host", "0.0.0.0", "--port", "8080"]
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: RESULTS_SINKS
+              value: "stdout"
+            - name: LOG_LEVEL
+              value: "info"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: results
+              mountPath: /results
+      volumes:
+        - name: results
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentic-tool-eval
+  labels:
+    app: agentic-tool-eval
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: agentic-tool-eval

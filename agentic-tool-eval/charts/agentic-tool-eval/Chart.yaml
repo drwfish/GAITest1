@@ -1,0 +1,6 @@
+apiVersion: v2
+name: agentic-tool-eval
+description: Agentic Tool-Use Evaluation Framework
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
