@@ -140,6 +140,7 @@ struct DashboardView: View {
                 Divider().overlay(Theme.Color.surfaceStroke)
 
                 HStack(spacing: 8) {
+                    let chainOk = state.audit.verifyChain() == nil
                     StatusPill(
                         text: state.market.feedHealthy ? "Feed Healthy" : "Feed Degraded",
                         tone: state.market.feedHealthy ? .success : .warn,
@@ -151,8 +152,8 @@ struct DashboardView: View {
                         icon: state.killSwitch.active ? "exclamationmark.octagon.fill" : "bolt.slash"
                     )
                     StatusPill(
-                        text: state.audit.verifyChain() == nil ? "Chain OK" : "Chain Broken",
-                        tone: state.audit.verifyChain() == nil ? .success : .danger,
+                        text: chainOk ? "Chain OK" : "Chain Broken",
+                        tone: chainOk ? .success : .danger,
                         icon: "link"
                     )
                     Spacer()
@@ -285,41 +286,34 @@ struct DashboardView: View {
 
     private func holdingRow(_ p: Position) -> some View {
         let tone: Color = p.pnlPct >= 0 ? Theme.Color.success : Theme.Color.danger
-        return Button(action: { /* TODO: position drilldown */ }) {
-            HStack {
-                Text(p.symbol)
-                    .font(Theme.Font.mono(12, weight: .semibold))
-                    .foregroundStyle(Theme.Color.textPrimary)
-                    .frame(width: 70, alignment: .leading)
-                Text(Fmt.qty(p.qty))
-                    .font(Theme.Font.mono(12))
-                    .foregroundStyle(Theme.Color.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                Text(Fmt.usd(p.mark, decimals: 2))
-                    .font(Theme.Font.mono(12))
-                    .foregroundStyle(Theme.Color.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                Text(Fmt.usd(p.marketValue, decimals: 0))
-                    .font(Theme.Font.mono(12, weight: .medium))
-                    .foregroundStyle(Theme.Color.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                Text((p.pnlPct >= 0 ? "+" : "") + String(format: "%.1f%%", p.pnlPct * 100))
-                    .font(Theme.Font.mono(12, weight: .semibold))
-                    .foregroundStyle(tone)
-                    .frame(width: 64, alignment: .trailing)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Theme.Color.textTertiary)
-                    .frame(width: 12)
-            }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(0.02))
-            )
+        return HStack {
+            Text(p.symbol)
+                .font(Theme.Font.mono(12, weight: .semibold))
+                .foregroundStyle(Theme.Color.textPrimary)
+                .frame(width: 70, alignment: .leading)
+            Text(Fmt.qty(p.qty))
+                .font(Theme.Font.mono(12))
+                .foregroundStyle(Theme.Color.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            Text(Fmt.usd(p.mark, decimals: 2))
+                .font(Theme.Font.mono(12))
+                .foregroundStyle(Theme.Color.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            Text(Fmt.usd(p.marketValue, decimals: 0))
+                .font(Theme.Font.mono(12, weight: .medium))
+                .foregroundStyle(Theme.Color.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            Text((p.pnlPct >= 0 ? "+" : "") + String(format: "%.1f%%", p.pnlPct * 100))
+                .font(Theme.Font.mono(12, weight: .semibold))
+                .foregroundStyle(tone)
+                .frame(width: 64, alignment: .trailing)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.white.opacity(0.02))
+        )
     }
 
     private var riskCard: some View {
@@ -328,7 +322,7 @@ struct DashboardView: View {
         let cash = state.selectedAccount?.cash ?? 0
         let totalCapital = max(1, aum + cash)
         let exposureUsed = aum / totalCapital
-        let cashDeployed = aum / totalCapital
+        let cashBuffer   = cash / totalCapital
         let drawdown = computeDrawdown(positions: positions)
         return GlassCard {
             VStack(alignment: .leading, spacing: 14) {
@@ -338,7 +332,7 @@ struct DashboardView: View {
                 Meter(label: "Drawdown", value: drawdown, limit: 0.10,
                       tone: Theme.Color.warn,
                       format: { String(format: "%.2f%%", $0 * 100) })
-                Meter(label: "Cash deployed", value: cashDeployed, limit: 1.0,
+                Meter(label: "Cash buffer", value: cashBuffer, limit: 1.0,
                       tone: Theme.Color.accent2)
             }
         }
@@ -415,7 +409,7 @@ struct DashboardView: View {
                 state.toggleFeed()
             }
             NeonButton(title: "Open Approvals", icon: "person.2.badge.gearshape.fill", tone: .accent, fill: false) {
-                // TODO: route to Approvals tab
+                state.requestedTab = .approvals
             }
         }
         return buttons

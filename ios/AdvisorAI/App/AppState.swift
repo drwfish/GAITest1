@@ -27,6 +27,8 @@ final class AppState: ObservableObject {
     @Published var mode: TradingMode = .paper
     @Published var selectedAccountId: String? = nil
     @Published var lastNewProposal: Proposal? = nil
+    /// Cross-tab routing slot. RootView observes this and switches tabs, then resets it to nil.
+    @Published var requestedTab: AppTab? = nil
 
     // Combine wiring so the view layer reflects nested service updates.
     private var bag = Set<AnyCancellable>()

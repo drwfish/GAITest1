@@ -201,41 +201,50 @@ struct Sparkline: View {
 
     var body: some View {
         GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            guard values.count > 1 else { return AnyView(EmptyView()) }
-            let minV = values.min() ?? 0
-            let maxV = values.max() ?? 1
-            let range = max(0.0001, maxV - minV)
-            let pts: [CGPoint] = values.enumerated().map { idx, v in
-                let x = CGFloat(idx) / CGFloat(values.count - 1) * w
-                let y = h - CGFloat((v - minV) / range) * h
-                return CGPoint(x: x, y: y)
+            if values.count > 1 {
+                sparkContent(width: geo.size.width, height: geo.size.height)
+            } else {
+                EmptyView()
             }
+        }
+    }
 
-            var line = Path()
-            line.move(to: pts[0])
-            for p in pts.dropFirst() { line.addLine(to: p) }
+    @ViewBuilder
+    private func sparkContent(width w: CGFloat, height h: CGFloat) -> some View {
+        let minV = values.min() ?? 0
+        let maxV = values.max() ?? 1
+        let range = max(0.0001, maxV - minV)
+        let pts: [CGPoint] = values.enumerated().map { idx, v in
+            let x = CGFloat(idx) / CGFloat(values.count - 1) * w
+            let y = h - CGFloat((v - minV) / range) * h
+            return CGPoint(x: x, y: y)
+        }
 
-            var area = line
-            area.addLine(to: CGPoint(x: w, y: h))
-            area.addLine(to: CGPoint(x: 0, y: h))
-            area.closeSubpath()
+        let line: Path = {
+            var p = Path()
+            p.move(to: pts[0])
+            for q in pts.dropFirst() { p.addLine(to: q) }
+            return p
+        }()
+        let area: Path = {
+            var p = line
+            p.addLine(to: CGPoint(x: w, y: h))
+            p.addLine(to: CGPoint(x: 0, y: h))
+            p.closeSubpath()
+            return p
+        }()
 
-            return AnyView(
-                ZStack {
-                    if fill {
-                        area.fill(
-                            LinearGradient(
-                                colors: [tone.opacity(0.35), tone.opacity(0)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                    }
-                    line.stroke(tone, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
-                }
-            )
+        ZStack {
+            if fill {
+                area.fill(
+                    LinearGradient(
+                        colors: [tone.opacity(0.35), tone.opacity(0)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
+            line.stroke(tone, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
         }
     }
 }

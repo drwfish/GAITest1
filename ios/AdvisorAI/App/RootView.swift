@@ -1,31 +1,31 @@
 import SwiftUI
 
-struct RootView: View {
-    @EnvironmentObject var state: AppState
-    @State private var selection: Tab = .dashboard
+enum AppTab: String, Hashable {
+    case dashboard, proposals, approvals, audit, governance
 
-    enum Tab: Hashable {
-        case dashboard, proposals, approvals, audit, governance
-
-        var label: String {
-            switch self {
-            case .dashboard:  return "Dashboard"
-            case .proposals:  return "Proposals"
-            case .approvals:  return "Approvals"
-            case .audit:      return "Audit"
-            case .governance: return "Governance"
-            }
-        }
-        var icon: String {
-            switch self {
-            case .dashboard:  return "chart.line.uptrend.xyaxis"
-            case .proposals:  return "sparkles.rectangle.stack"
-            case .approvals:  return "person.badge.shield.checkmark"
-            case .audit:      return "doc.text.magnifyingglass"
-            case .governance: return "lock.shield"
-            }
+    var label: String {
+        switch self {
+        case .dashboard:  return "Dashboard"
+        case .proposals:  return "Proposals"
+        case .approvals:  return "Approvals"
+        case .audit:      return "Audit"
+        case .governance: return "Governance"
         }
     }
+    var icon: String {
+        switch self {
+        case .dashboard:  return "chart.line.uptrend.xyaxis"
+        case .proposals:  return "sparkles.rectangle.stack"
+        case .approvals:  return "person.badge.shield.checkmark"
+        case .audit:      return "doc.text.magnifyingglass"
+        case .governance: return "lock.shield"
+        }
+    }
+}
+
+struct RootView: View {
+    @EnvironmentObject var state: AppState
+    @State private var selection: AppTab = .dashboard
 
     var body: some View {
         ZStack {
@@ -33,27 +33,35 @@ struct RootView: View {
 
             TabView(selection: $selection) {
                 DashboardView()
-                    .tabItem { Label(Tab.dashboard.label, systemImage: Tab.dashboard.icon) }
-                    .tag(Tab.dashboard)
+                    .tabItem { Label(AppTab.dashboard.label, systemImage: AppTab.dashboard.icon) }
+                    .tag(AppTab.dashboard)
 
                 ProposalsView()
-                    .tabItem { Label(Tab.proposals.label, systemImage: Tab.proposals.icon) }
-                    .tag(Tab.proposals)
+                    .tabItem { Label(AppTab.proposals.label, systemImage: AppTab.proposals.icon) }
+                    .tag(AppTab.proposals)
 
                 ApprovalQueueView()
-                    .tabItem { Label(Tab.approvals.label, systemImage: Tab.approvals.icon) }
+                    .tabItem { Label(AppTab.approvals.label, systemImage: AppTab.approvals.icon) }
                     .badge(state.openCases.count > 0 ? state.openCases.count : 0)
-                    .tag(Tab.approvals)
+                    .tag(AppTab.approvals)
 
                 AuditTrailView()
-                    .tabItem { Label(Tab.audit.label, systemImage: Tab.audit.icon) }
-                    .tag(Tab.audit)
+                    .tabItem { Label(AppTab.audit.label, systemImage: AppTab.audit.icon) }
+                    .tag(AppTab.audit)
 
                 GovernanceView()
-                    .tabItem { Label(Tab.governance.label, systemImage: Tab.governance.icon) }
-                    .tag(Tab.governance)
+                    .tabItem { Label(AppTab.governance.label, systemImage: AppTab.governance.icon) }
+                    .tag(AppTab.governance)
             }
             .tint(Theme.Color.accent)
+            .onChange(of: state.requestedTab) { _, new in
+                if let new {
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                        selection = new
+                    }
+                    state.requestedTab = nil
+                }
+            }
         }
     }
 }

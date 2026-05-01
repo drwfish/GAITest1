@@ -92,7 +92,7 @@ struct ApprovalQueueView: View {
                             Text("HITL is per-case by design.")
                             Text("There is no one-tap mass approval.")
                         } label: {
-                            Label("Decide", systemImage: "checklist")
+                            Label("Help", systemImage: "questionmark.circle")
                                 .font(Theme.Font.body(13, weight: .semibold))
                                 .foregroundStyle(Theme.Color.accent)
                         }
