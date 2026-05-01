@@ -21,3 +21,15 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Xcode / iOS build products
+ios/build/
+ios/DerivedData/
+ios/AdvisorAI.xcodeproj/
+ios/AdvisorAI.xcworkspace/
+ios/*.xcuserstate
+**/xcuserdata/
+**/*.xcuserdatad/
+ios/Pods/
+ios/.build/
+ios/.swiftpm/
