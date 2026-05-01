@@ -3,22 +3,13 @@ import SwiftUI
 import UIKit
 #endif
 
-/// Animated visualization of a proposal flowing through the pipeline:
-/// Ingest → Validate → Signal → Optimize → Risk → Policy → Approval → OMS → Broker → Reconcile.
-///
-/// Lane labels indicate the AI advisory plane (the `signal` stage) vs the deterministic
-/// execution plane (everything else).  The view is reusable and stateless w.r.t. AppState —
-/// pass `haltAt:` to show a red failure stop.
+/// Animated pipeline: Ingest → Validate → Signal → Optimize → Risk → Policy → Approval → OMS → Broker → Reconcile.
+/// `signal` sits in the AI advisory plane; the rest is the deterministic execution plane.
 struct PipelineView: View {
-
-    // MARK: API
-
     let stages: [PipelineStage]
     let autoplay: Bool
     let haltAt: PipelineStage?
     let onComplete: (() -> Void)?
-
-    /// Parents may bump this binding to replay the animation. Optional.
     @Binding var trigger: Int
 
     init(stages: [PipelineStage] = PipelineStage.allCases,
@@ -33,22 +24,17 @@ struct PipelineView: View {
         self.onComplete = onComplete
     }
 
-    // MARK: Internal animation state
-
-    @State private var activeIndex: Int = -1     // -1 = not started
-    @State private var beamProgress: CGFloat = 0  // 0...Double(stages.count-1)
+    @State private var activeIndex: Int = -1
+    @State private var beamProgress: CGFloat = 0
     @State private var particleProgress: CGFloat = 0
     @State private var failed: Bool = false
     @State private var lastTrigger: Int = -1
-
-    // MARK: Layout constants
+    @State private var completedAll: Bool = false
 
     private let nodeSize: CGFloat = 92
     private let compactNodeSize: CGFloat = 72
     private let nodeSpacing: CGFloat = 56
     private let laneTop: CGFloat = 8
-    private let trackY: CGFloat = 64   // y-center of beam relative to node top
-
     private var stepDuration: Double { 0.6 }
 
     // MARK: Body
@@ -292,7 +278,6 @@ struct PipelineView: View {
                      glowTint: .clear)
     }
 
-    @State private var completedAll: Bool = false
     private var failedIndex: Int {
         guard let halt = haltAt, let idx = stages.firstIndex(of: halt) else { return -1 }
         return idx
