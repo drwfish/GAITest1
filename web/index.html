@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070914">
+<title>AdvisorAI POC</title>
+<style id="base">
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#070914;color:#fff;font-family:-apple-system,system-ui,sans-serif;min-height:100vh}
+body{background:radial-gradient(900px 600px at 10% -10%,rgba(0,217,255,.18),transparent 60%),radial-gradient(900px 600px at 110% 110%,rgba(124,58,237,.18),transparent 60%),linear-gradient(180deg,#070914,#0a0e1c 50%,#11172a)}
+.tabs{display:flex;gap:6px;padding:10px;overflow-x:auto;position:sticky;top:0;background:rgba(7,9,20,.85);backdrop-filter:blur(12px);z-index:10;border-bottom:1px solid rgba(255,255,255,.06)}
+.tab{flex:0 0 auto;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(255,255,255,.7);font-size:13px;font-weight:600;letter-spacing:.3px}
+.tab.active{background:rgba(0,217,255,.14);border-color:rgba(0,217,255,.5);color:#00d9ff}
+main{padding:14px;padding-bottom:80px;max-width:780px;margin:0 auto}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:14px;backdrop-filter:blur(8px)}
+.title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00d9ff;font-weight:700;margin:0 0 6px}
+h1{font-size:22px;margin:0 0 12px;font-weight:700}
+.muted{color:rgba(255,255,255,.6);font-size:13px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.panel{display:none}
+.panel.active{display:block}
+.placeholder{padding:28px;text-align:center;color:rgba(255,255,255,.5);border:1px dashed rgba(255,255,255,.1);border-radius:14px}
+</style>
+</head>
+<body>
+<nav class="tabs" id="tabs">
+<button class="tab active" data-t="dashboard">Dashboard</button>
+<button class="tab" data-t="proposals">Proposals</button>
+<button class="tab" data-t="approvals">Approvals</button>
+<button class="tab" data-t="audit">Audit</button>
+<button class="tab" data-t="governance">Governance</button>
+</nav>
+<main>
+<section id="p-dashboard" class="panel active">
+<div class="card"><p class="title">Mission Control</p><h1>AdvisorAI</h1><p class="muted">Dark institutional POC. Loading additional features in chunks…</p></div>
+<div id="dash" class="placeholder">Dashboard content arriving…</div>
+</section>
+<section id="p-proposals" class="panel"><div id="props" class="placeholder">Proposals & Pipeline arriving…</div></section>
+<section id="p-approvals" class="panel"><div id="apprs" class="placeholder">Approval queue arriving…</div></section>
+<section id="p-audit" class="panel"><div id="adt" class="placeholder">Audit trail arriving…</div></section>
+<section id="p-governance" class="panel"><div id="gov" class="placeholder">Governance controls arriving…</div></section>
+</main>
+<script id="js-base">
+document.getElementById('tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.tab'); if(!b) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='p-'+b.dataset.t));
+});
+window.APP={state:{},ready:false};
+</script>
+</body>
+</html>
