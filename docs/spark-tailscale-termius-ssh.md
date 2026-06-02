@@ -191,6 +191,14 @@ Tailscale SSH with an ACL `"action": "check"` rule. `check` mode requires the
 user to **re-approve each session in a browser**; Tailscale sends a "visit URL to
 authenticate" prompt that a raw client like Termius can't display, so it hangs.
 
+**Signature in the Termius log:** the connection resolves to the `100.x` tailnet
+IP, establishes, reports `Remote server: SSH-2.0-Tailscale`, agrees ciphers, says
+**"Handshake finished" — then fails** with "Connection could not be
+established." Everything up to auth works; Tailscale SSH then *refuses
+authorization* because (a) there is no `ssh` ACL `accept` rule matching
+src→dst→user, or (b) the rule is `check` (needs a browser approval Termius can't
+display), or (c) the login user isn't permitted by the rule's `users`.
+
 Two remote fixes (phone browser, no local console):
 
 - **Best:** connect once via the **Tailscale SSH Console** (admin console →
