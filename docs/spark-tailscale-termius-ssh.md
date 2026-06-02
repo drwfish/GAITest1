@@ -183,6 +183,33 @@ real local account on the Spark (see §6).
 > Permissions matter: `~/.ssh` must be `700` and `authorized_keys` `600`, or
 > sshd silently refuses the key.
 
+## 5b. Hangs forever on "Authenticating…" — Tailscale SSH `check` mode
+
+If the connection reaches the auth phase and **spins on "Authenticating…"**
+indefinitely (TCP is fine, node is green), the Spark is almost certainly running
+Tailscale SSH with an ACL `"action": "check"` rule. `check` mode requires the
+user to **re-approve each session in a browser**; Tailscale sends a "visit URL to
+authenticate" prompt that a raw client like Termius can't display, so it hangs.
+
+Two remote fixes (phone browser, no local console):
+
+- **Best:** connect once via the **Tailscale SSH Console** (admin console →
+  `spark-4e24` → SSH) — being a browser, it completes the check automatically and
+  logs you in. Good for getting in *now*.
+- **Permanent (makes Termius work):** in the admin console → **Access controls**,
+  change the SSH rule `action` from `check` to `accept` for your user/device:
+  ```jsonc
+  "ssh": [
+    {
+      "action": "accept",            // was: "check"
+      "src":    ["autogroup:member"],
+      "dst":    ["autogroup:self"],
+      "users":  ["autogroup:nonroot", "ubuntu"]
+    }
+  ]
+  ```
+  Save, then retry Termius — auth completes instantly with no browser step.
+
 ## 6. Wrong username
 
 `Permission denied` also appears when the **username** is wrong. SSH as the
