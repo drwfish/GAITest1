@@ -210,6 +210,30 @@ Two remote fixes (phone browser, no local console):
   ```
   Save, then retry Termius — auth completes instantly with no browser step.
 
+## 5c. Times out on a PUBLIC IP — Termius is bypassing the tailnet
+
+If the Termius connection log shows it resolving the host to a **public** address
+(e.g. an IPv6 like `2607:7700:…`, anything outside `100.64.0.0/10` or
+`fd7a:115c::/48`) and then **timing out**, Termius is going over the open
+internet instead of through Tailscale. The Spark isn't exposed publicly, so it
+hangs and fails.
+
+Tailscale ranges (what you SHOULD see it connect to):
+- IPv4: `100.x.y.z` (CGNAT range `100.64.0.0/10`)
+- IPv6: `fd7a:115c:a1e0:…`
+
+Causes & fixes (phone only):
+
+1. **Phone's Tailscale tunnel isn't actually up.** The node showing "Connected"
+   in the Tailscale app's device detail is the *node's* status, not proof your
+   phone's VPN is routing. Open the Tailscale app, ensure the main **toggle is
+   ON**, and confirm the VPN indicator is in the status bar. If the tunnel were
+   up, DNS would resolve to the `100.x`/`fd7a` address, not a public one.
+2. **Host Address is a name that resolves publicly.** A literal `100.x` can't
+   resolve to a public IPv6 — so the Address field holds a hostname/DDNS. Replace
+   it with the **literal Tailscale IPv4** (`tailscale ip -4`, e.g.
+   `100.120.71.65`). Remove any separate hostname / jump-host entry.
+
 ## 6. Wrong username
 
 `Permission denied` also appears when the **username** is wrong. SSH as the
