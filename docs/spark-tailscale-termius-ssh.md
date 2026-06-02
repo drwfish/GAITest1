@@ -8,6 +8,58 @@ often they're the real cause.
 
 ---
 
+## Remote-only recovery (no local console, you're off-site)
+
+You don't need to touch the Spark to get back in. Everything here runs from a
+**phone browser**.
+
+### Win #1 — Tailscale SSH Console (browser shell, no key, no Termius)
+
+If the Spark was brought up with Tailscale SSH (`tailscale up --ssh`, which the
+official NVIDIA Spark Tailscale playbook does), you can open a shell straight
+from the admin console:
+
+1. On the phone browser go to <https://login.tailscale.com/admin/machines> and
+   sign in (you must be Owner/Admin of the tailnet — you are, it's your Spark).
+2. Find the Spark. If it shows **green/online**, tap the **⋯** menu → **SSH to
+   machine** (a.k.a. "Connect"). Your browser becomes a tailnet node via
+   WebAssembly and drops you into a shell — auth is your tailnet identity, so
+   **no SSH key and no password are involved**. Termius being broken is
+   irrelevant here.
+3. You're now logged in. From this shell you can repair whatever was blocking
+   Termius (add your Termius public key to `authorized_keys`, restart `ssh`,
+   etc. — see §5/§6 below).
+
+If "SSH to machine" is greyed out / missing, the node either isn't online or
+doesn't have Tailscale SSH enabled — fall through to the next wins.
+
+### Win #2 — Fix it from the admin console UI (no shell needed)
+
+Even with zero shell access, from the phone browser you can:
+
+- **Disable key expiry** (⋯ → *Disable key expiry*) — fixes/prevents the 90‑day
+  expiry lockout, the single most common "it logged in before, now it won't".
+- **Check online state** — if the Spark shows **Expired** or **Offline**, no SSH
+  path will work until it re‑authenticates; that points you at the real problem.
+- **Edit ACLs / DNS** — enable MagicDNS, or add the SSH policy rule that Win #1
+  needs.
+
+### Win #3 — NVIDIA Sync / web dashboard over the tailnet
+
+NVIDIA Sync gives remote access that comes up as a system service *before*
+login. If it's set up, reach the Spark's web console at its tailnet IP from the
+phone browser as another way in.
+
+### If the node is Expired/Offline
+
+A truly expired node needs `tailscale up` re-auth, which normally needs a shell —
+the catch‑22. Remote outs: NVIDIA Sync (Win #3) if it's running, or an auth-key
+re-add if you pre‑provisioned one. If none exist, this is the one case that
+needs someone to touch the box. Disabling key expiry now (Win #2) prevents it
+from ever recurring.
+
+---
+
 ## 0. Two‑minute triage
 
 On the **Spark** (use the local console, keyboard+monitor, or NVIDIA Sync if SSH
@@ -165,4 +217,6 @@ new fingerprint.
 - NVIDIA DGX Spark Remote Access Runbook:
   <https://www.xingzhang.me/blog/dgx_spark_remote_access_runbook/>
 - Tailscale SSH docs: <https://tailscale.com/docs/features/tailscale-ssh>
+- Tailscale SSH Console (browser shell): <https://tailscale.com/docs/features/tailscale-ssh/tailscale-ssh-console>
+- NVIDIA Sync (DGX Spark remote access): <https://docs.nvidia.com/dgx/dgx-spark/nvidia-sync.html>
 - Tailscale key expiry: <https://login.tailscale.com/admin/machines>
