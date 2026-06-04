@@ -242,6 +242,30 @@ Causes & fixes (phone only):
    it with the **literal Tailscale IPv4** (`tailscale ip -4`, e.g.
    `100.120.71.65`). Remove any separate hostname / jump-host entry.
 
+## 5d. Literal IP "resolves" to a DIFFERENT address — stale Jump/Proxy host
+
+If you set the host **Address to a literal IP** (e.g. `100.120.71.65`) but the log
+shows it connecting to a *different* address and timing out:
+
+```
+Starting a new connection to: "100.120.71.65" port 22
+Connecting to "2607:7700:0:27:0:2:6478:4741" port 22   ← different addr!
+Connection failed: connection timed out.
+```
+
+A literal IPv4 can't resolve to another IP — so Termius is dialing a **Proxy /
+Jump Host (bastion)** first and the *jump* address is what's failing. Classic
+cause: you used to SSH *through* a VM/bastion to reach the main host, then deleted
+that VM — the jump now points at a dead address.
+
+Fix (Termius, phone):
+
+1. Edit the host → find **Proxy** / **Jump Host** / **Host Chain** (sometimes
+   under Advanced / Network) → set it to **None / Direct**.
+2. Check the **group default** (e.g. the "Personal" group) and Termius **global
+   proxy** (Settings → Network) — a jump set there is inherited by every host.
+3. Save and reconnect directly to the `100.x` tailnet IP.
+
 ## 6. Wrong username
 
 `Permission denied` also appears when the **username** is wrong. SSH as the
