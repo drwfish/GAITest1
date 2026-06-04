@@ -242,29 +242,36 @@ Causes & fixes (phone only):
    it with the **literal Tailscale IPv4** (`tailscale ip -4`, e.g.
    `100.120.71.65`). Remove any separate hostname / jump-host entry.
 
-## 5d. Literal IP "resolves" to a DIFFERENT address — stale Jump/Proxy host
+## 5d. Literal `100.x` IP times out on an IPv6 address — NAT64, tunnel is down
 
-If you set the host **Address to a literal IP** (e.g. `100.120.71.65`) but the log
-shows it connecting to a *different* address and timing out:
+On an **IPv6-only mobile network** (common on 5G), if you connect to the literal
+Tailscale IP and the log shows it dialing a synthesized IPv6 and timing out:
 
 ```
 Starting a new connection to: "100.120.71.65" port 22
-Connecting to "2607:7700:0:27:0:2:6478:4741" port 22   ← different addr!
+Connecting to "2607:7700:0:27:0:2:6478:4741" port 22   ← NAT64 of 100.120.71.65
 Connection failed: connection timed out.
 ```
 
-A literal IPv4 can't resolve to another IP — so Termius is dialing a **Proxy /
-Jump Host (bastion)** first and the *jump* address is what's failing. Classic
-cause: you used to SSH *through* a VM/bastion to reach the main host, then deleted
-that VM — the jump now points at a dead address.
+That IPv6 is **NAT64-synthesized**: the last 32 bits encode the IPv4 in hex
+(`100.120.71.65` -> `0x64 0x78 0x47 0x41` -> `6478:4741`), wrapped in the
+carrier's NAT64 prefix. It means **the phone's Tailscale tunnel is NOT active** —
+so the `100.64.0.0/10` CGNAT address isn't captured by Tailscale and instead
+falls through to the carrier's NAT64 gateway, which can't route a private address.
 
-Fix (Termius, phone):
+(NB: this is *not* a proxy/jump host — Termius Proxy and Host Chaining are paid
+features and usually aren't even enabled. Don't chase those.)
 
-1. Edit the host → find **Proxy** / **Jump Host** / **Host Chain** (sometimes
-   under Advanced / Network) → set it to **None / Direct**.
-2. Check the **group default** (e.g. the "Personal" group) and Termius **global
-   proxy** (Settings → Network) — a jump set there is inherited by every host.
-3. Save and reconnect directly to the `100.x` tailnet IP.
+Fix (phone):
+
+1. Open the **Tailscale app**, ensure the **main toggle is ON**, and confirm the
+   **VPN indicator** is in the status bar. The node showing "Connected" in the
+   device list is the *peer's* status, not your phone's tunnel.
+2. Reconnect. With the tunnel up, Tailscale owns the `100.x` route and NAT64
+   never sees it.
+3. Prefer the **MagicDNS name** (`<host>.<tailnet>.ts.net`) over the literal IP —
+   it only resolves while Tailscale is up, so a down tunnel fails loudly instead
+   of silently NAT64-ing to a timeout.
 
 ## 6. Wrong username
 
